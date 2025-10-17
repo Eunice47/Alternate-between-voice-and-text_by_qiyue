@@ -2,40 +2,19 @@
 经过测试，该文件可以跳过tts生成语音，可以帮助用户减少费用。
 如果需要修改概率，请在您替换过的 respond/stage.py 文件中，找到以下代码段：
 
-Python
-
-            # 2. 如果消息链同时包含文字和语音，执行随机逻辑
-            if has_plain and has_record:
-                # random.random() < 0.7 表示 70% 概率只发文字
-                if random.random() < 0.7:
-                    # 30% 概率：只发送文字 (移除所有 Record 语音组件)
-                    logger.info("随机选择：仅发送文本 (移除语音组件)")
-                    result.chain = [
-                        comp
-                        for comp in result.chain
-                        if not isinstance(comp, Comp.Record)
-                    ]
-                else:
-                    # 30% 概率：只发送语音 (移除所有 Plain 文本组件)
-                    logger.info("随机选择：仅发送语音 (移除文本组件)")
-                    result.chain = [
-                        comp
-                        for comp in result.chain
-                        if not isinstance(comp, Comp.Plain)
-                    ]
-如果您想将概率改为 40% 文字 / 60% 语音，您需要将代码修改为：
-
-Python
-
-            # 2. 如果消息链同时包含文字和语音，执行随机逻辑
-            if has_plain and has_record:
-                # random.random() < 0.4 表示 40% 概率只发文字
-                if random.random() < 0.4:  # <-- 将 0.3 改为 0.4
-                    # 40% 概率：只发送文字 (移除所有 Record 语音组件)
-                    logger.info("随机选择：仅发送文本 (移除语音组件)")
-                    # ... (其余代码保持不变) ...
-                else:
-                    # 60% 概率：只发送语音 (移除所有 Plain 文本组件)
-                    logger.info("随机选择：仅发送语音 (移除文本组件)")
-                    # ... (其余代码保持不变) ...
-修改完成后，请务必保存文件并重启 AstrBot (uv run main.py)，新的概率就会生效
+请打开文件 astrbot/core/pipeline/result_decorate/stage.py，定位到大约 215 行（或搜索 # 随机选择概率），找到以下代码块：
+Python            # --- 【开始插入】随机选择逻辑 (30% 文本 / 70% 语音) --------------------------------
+            should_generate_tts = True
+            
+            # 仅对 LLM 结果应用随机逻辑
+            if result.is_llm_result() and self.ctx.astrbot_config["provider_tts_settings"]["enable"]:
+                
+                # 随机选择概率 (0.3 for text, 0.7 for voice)
+                if random.random() < 0.3: # <-- 就是这一行！
+                    should_generate_tts = False
+                    logger.info("随机选择：30% 仅发送文本。跳过 TTS 生成，**节省成本**。")
+                else: 
+                    logger.info("随机选择：70% 仅发送语音。将进行 TTS 生成，并移除 Plain 组件。")
+            
+            # --- 【结束插入】随机选择逻辑 --------------------------------
+修改规则：您需要修改数字 0.3。您想达到的目的需要修改的数值示例代码100% 语音 (不发送文本)将 0.3 改为 0.0if random.random() < 0.0:90% 语音 / 10% 文本将 0.3 改为 0.1if random.random() < 0.1:50% 语音 / 50% 文本将 0.3 改为 0.5if random.random() < 0.5:10% 语音 / 90% 文本将 0.3 改为 0.9if random.random() < 0.9:100% 文本 (关闭随机)将 0.3 改为 1.0if random.random() < 1.0:核心： random.random() < X 中的 X 代表发送 文本 的概率。修改完成后，请保存文件并重启 AstrBot (uv run main.py) 使其生效。
