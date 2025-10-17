@@ -2,7 +2,7 @@
 经过测试，该文件可以跳过tts生成语音，可以帮助用户减少费用。
 如果需要修改概率，请在您替换过的 respond/stage.py 文件中，找到以下代码段：
 
-请打开文件 astrbot/core/pipeline/result_decorate/stage.py，定位到大约 215 行（或搜索 # 随机选择概率），找到以下代码块：
+请打开文件 astrbot/core/pipeline/result_decorate/stage.py，找到以下代码块：
 Python            # --- 【开始插入】随机选择逻辑 (30% 文本 / 70% 语音) --------------------------------
             should_generate_tts = True
             
@@ -17,4 +17,4 @@ Python            # --- 【开始插入】随机选择逻辑 (30% 文本 / 70% �
                     logger.info("随机选择：70% 仅发送语音。将进行 TTS 生成，并移除 Plain 组件。")
             
             # --- 【结束插入】随机选择逻辑 --------------------------------
-修改规则：您需要修改数字 0.3。您想达到的目的需要修改的数值示例代码100% 语音 (不发送文本)将 0.3 改为 0.0if random.random() < 0.0:90% 语音 / 10% 文本将 0.3 改为 0.1if random.random() < 0.1:50% 语音 / 50% 文本将 0.3 改为 0.5if random.random() < 0.5:10% 语音 / 90% 文本将 0.3 改为 0.9if random.random() < 0.9:100% 文本 (关闭随机)将 0.3 改为 1.0if random.random() < 1.0:核心： random.random() < X 中的 X 代表发送 文本 的概率。修改完成后，请保存文件并重启 AstrBot (uv run main.py) 使其生效。
+修改完成后，请保存文件并重启 AstrBot (uv run main.py) 使其生效。
